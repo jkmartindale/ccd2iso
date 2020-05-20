@@ -1,7 +1,9 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 """C Structure representation of the CloneCD .img format."""
+
 from ctypes import c_ubyte, Structure, Union
 
 DATA_SIZE = 2048
