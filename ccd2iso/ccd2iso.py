@@ -1,8 +1,8 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
-
-from clonecd import ccd_sector
+"""Tool to convert CloneCD .img files to ISO 9660 .iso files."""
+from .clonecd import ccd_sector
 from ctypes import sizeof
 
 # Set up command arguments

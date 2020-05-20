@@ -1,7 +1,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
-
+"""C Structure representation of the CloneCD .img format."""
 from ctypes import c_ubyte, Structure, Union
 
 DATA_SIZE = 2048
@@ -42,6 +42,10 @@ class ccd_mode2(Structure):
 
 
 class ccd_content(Union):
+    """Represents various modes a content block could be in.
+
+    Other modes exist, such as for multisession data.
+    """
     _fields_ = [
         ('mode1', ccd_mode1),
         ('mode2', ccd_mode2),
@@ -49,6 +53,7 @@ class ccd_content(Union):
 
 
 class ccd_sector(Structure):
+    """Individual sector in the disc image."""
     _fields_ = [
         ('sectheader', ccd_sectheader),
         ('content', ccd_content),
