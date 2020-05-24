@@ -33,8 +33,8 @@ class UnrecognizedSectorModeError(Exception):
 def convert(src_file: BytesIO, dst_file: BytesIO, progress_file: Any = None) -> None:
     """Converts a CloneCD disc image bytestream to an ISO 9660 bytestream.
 
-    src_file      -- CloneCD disc image bytestream (typically with a .img extension)
-    dst_file      -- destination bytestream to write to in ISO 9660 format
+    src_file -- CloneCD disc image bytestream (typically with a .img extension)
+    dst_file -- destination bytestream to write to in ISO 9660 format
     progress_file -- file to write progress messages to, if not None
     """
 
@@ -70,7 +70,21 @@ def convert(src_file: BytesIO, dst_file: BytesIO, progress_file: Any = None) -> 
 
 
 def main():
-    """Command-line interface"""
+    """Command-line interface
+    
+    usage: ccd2iso [-f] [-?] [-v] img [iso]
+
+    Convert CloneCD .img files to ISO 9660 .iso files.
+
+    positional arguments:
+    img             .img file to convert
+    iso             filepath for the output .iso file
+
+    optional arguments:
+    -f, --force     overwrite the .iso file if it already exists
+    -?, -h, --help  show this help message and exit
+    -v, --version   show program's version number and exit
+    """
 
     # Set up command arguments
     import argparse
