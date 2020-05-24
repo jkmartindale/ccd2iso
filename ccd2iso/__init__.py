@@ -109,26 +109,49 @@ def main():
     # Parse arguments
     args = parser.parse_args()
 
-    # Open files
+    # Check source file
     try:
         src_file = open(args.img, 'rb')
     except FileNotFoundError as error:
-        print("Couldn't find the file", error.filename)
+        print("Error: Couldn't find the file", error.filename)
         sys.exit(1)
-    try:
-        dst_file = open(args.iso, 'wb' if args.force else 'xb')
-    except FileExistsError as error:
-        print('%s already exists, pass --force if you want to overwrite it.' %
-              error.filename)
+    
+    # Set up destination file
+    import os
+    import tempfile
+
+    if not args.iso:
+        args.iso = os.path.splitext(args.img)[0] + '.iso'
+    if os.path.exists(args.iso) and not args.force:
+        print('Error:', args.iso, 'already exists, pass --force if you want to overwrite it.')
         sys.exit(1)
 
+    dst_file = tempfile.NamedTemporaryFile(dir=os.path.dirname(args.iso), delete=False)
+
+    # Run conversion
     try:
         convert(src_file, dst_file, progress_file=sys.stdout)
+    except KeyboardInterrupt:
+        print() # Clean up after carriage return in convert()
+        print('Cancelled.')
+        dst_file.close()
+        os.remove(dst_file.name)
+        sys.exit(1)
     except Exception as error:
+        print() # Clean up after carriage return in convert()
         print(error)
+        dst_file.close()
+        os.remove(dst_file.name)
+        sys.exit(1)
 
+    # Clean up
     src_file.close()
     dst_file.close()
+    try:
+        os.replace(dst_file.name, args.iso)
+    except PermissionError:
+        print("Error: Couldn't overwrite", args.iso)
+        print('The .iso file might be mounted or marked read-only.')
     print('Done.')
 
 
