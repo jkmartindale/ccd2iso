@@ -21,6 +21,6 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     python_requires='>=3.8',
     entry_points={
-        'console_scripts': ['ccd2iso = ccd2iso.ccd2iso:main'],
+        'console_scripts': ['ccd2iso = ccd2iso:main'],
     }
 )
