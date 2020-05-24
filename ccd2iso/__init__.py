@@ -54,9 +54,9 @@ def convert(src_file: BytesIO, dst_file: BytesIO, progress_file: Any = None) -> 
             bytes_written = dst_file.write(src_sect.content.mode2.data)
         elif src_sect.sectheader.header.mode == b'\xe2':
             raise SessionMarkerError(
-                'Found a session marker, this image might contain multisession data. Only the first session was exported.')
+                'Error: Found a session marker, this image might contain multisession data. Only the first session was exported.')
         else:
-            raise UnrecognizedSectorModeError('Unrecognized sector mode (%x) at sector %d!' %
+            raise UnrecognizedSectorModeError('Error: Unrecognized sector mode (%x) at sector %d!' %
                                               (src_sect.sectheader.header.mode, sect_num))
 
         sect_num += 1
@@ -152,8 +152,9 @@ def main():
     except PermissionError:
         print("Error: Couldn't overwrite", args.iso)
         print('The .iso file might be mounted or marked read-only.')
+        print(dst_file.name, 'contains the ISO data')
     print('Done.')
-
+    
 
 if __name__ == '__main__':
     main()
