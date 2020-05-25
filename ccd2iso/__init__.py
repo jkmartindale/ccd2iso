@@ -6,7 +6,7 @@
 
 from typing import Any
 from io import BytesIO
-from .clonecd import ccd_sector
+from ccd2iso.clonecd import ccd_sector
 import contextlib
 import os
 import progressbar
