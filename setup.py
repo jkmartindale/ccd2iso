@@ -19,6 +19,9 @@ setuptools.setup(
         'Programming Language :: Python :: 3',
     ],
     packages=setuptools.find_packages(),
+    install_requires=[
+        'progressbar2',
+    ],
     python_requires='>=3.8',
     entry_points={
         'console_scripts': ['ccd2iso = ccd2iso:main'],

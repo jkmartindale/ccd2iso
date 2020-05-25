@@ -7,6 +7,9 @@
 from typing import Any
 from io import BytesIO
 from .clonecd import ccd_sector
+import contextlib
+import os
+import progressbar
 from ctypes import sizeof
 import sys
 
@@ -30,43 +33,43 @@ class UnrecognizedSectorModeError(Exception):
     pass
 
 
-def convert(src_file: BytesIO, dst_file: BytesIO, progress_file: Any = None) -> None:
+def convert(src_file: BytesIO, dst_file: BytesIO, progress: bool = False, size: int = None) -> None:
     """Converts a CloneCD disc image bytestream to an ISO 9660 bytestream.
 
     src_file -- CloneCD disc image bytestream (typically with a .img extension)
     dst_file -- destination bytestream to write to in ISO 9660 format
-    progress_file -- file to write progress messages to, if not None
+    progress -- whether to output a progress bar to stdout
+    size -- size of src_file, used to calculate sectors remaining for progress
     """
 
     sect_num = 0
     expected_size = sizeof(ccd_sector)
+    max_value = int(size/expected_size) if size else progressbar.UnknownLength
+    context = progressbar.ProgressBar(max_value=max_value) if progress else contextlib.nullcontext()
 
-    while bytes_read := src_file.read(sizeof(ccd_sector)):
-        src_sect = ccd_sector.from_buffer_copy(bytes_read)
-        if sizeof(src_sect) < sizeof(ccd_sector):
-            raise IncompleteSectorError(
-                'Error: Sector %d is incomplete, with only %d bytes instead of %d.' %
-                (sect_num, sizeof(src_sect), expected_size))
+    with context:
+        while bytes_read := src_file.read(expected_size):
+            src_sect = ccd_sector.from_buffer_copy(bytes_read)
+            if sizeof(src_sect) < expected_size:
+                raise IncompleteSectorError(
+                    'Error: Sector %d is incomplete, with only %d bytes instead of %d.' %
+                    (sect_num, sizeof(src_sect), expected_size))
 
-        if src_sect.sectheader.header.mode == 1:
-            bytes_written = dst_file.write(src_sect.content.mode1.data)
-        elif src_sect.sectheader.header.mode == 2:
-            bytes_written = dst_file.write(src_sect.content.mode2.data)
-        elif src_sect.sectheader.header.mode == b'\xe2':
-            raise SessionMarkerError(
-                'Error: Found a session marker, this image might contain multisession data. Only the first session was exported.')
-        else:
-            raise UnrecognizedSectorModeError('Error: Unrecognized sector mode (%x) at sector %d!' %
-                                              (src_sect.sectheader.header.mode, sect_num))
+            if src_sect.sectheader.header.mode == 1:
+                bytes_written = dst_file.write(src_sect.content.mode1.data)
+            elif src_sect.sectheader.header.mode == 2:
+                bytes_written = dst_file.write(src_sect.content.mode2.data)
+            elif src_sect.sectheader.header.mode == b'\xe2':
+                raise SessionMarkerError(
+                    'Error: Found a session marker, this image might contain multisession data. Only the first session was exported.')
+            else:
+                raise UnrecognizedSectorModeError('Error: Unrecognized sector mode (%x) at sector %d!' %
+                                                (src_sect.sectheader.header.mode, sect_num))
 
-        sect_num += 1
+            sect_num += 1
 
-        if progress_file:
-            print('Sector %d written\r' % sect_num, end='', file=progress_file)
-    
-    # Clean up after last carriage return
-    if progress_file:
-        print(file=progress_file)
+            if progress:
+                context.update(sect_num)
 
 
 def main():
@@ -117,7 +120,6 @@ def main():
         sys.exit(1)
     
     # Set up destination file
-    import os
     import tempfile
 
     if not args.iso:
@@ -130,15 +132,13 @@ def main():
 
     # Run conversion
     try:
-        convert(src_file, dst_file, progress_file=sys.stdout)
+        convert(src_file, dst_file, progress=False, size=os.path.getsize(args.img))
     except KeyboardInterrupt:
-        print() # Clean up after carriage return in convert()
         print('Cancelled.')
         dst_file.close()
         os.remove(dst_file.name)
         sys.exit(1)
     except Exception as error:
-        print() # Clean up after carriage return in convert()
         print(error)
         dst_file.close()
         os.remove(dst_file.name)
@@ -154,7 +154,7 @@ def main():
         print('The .iso file might be mounted or marked read-only.')
         print(dst_file.name, 'contains the ISO data')
     print('Done.')
-    
+
 
 if __name__ == '__main__':
     main()
