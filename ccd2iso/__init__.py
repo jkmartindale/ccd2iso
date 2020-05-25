@@ -85,8 +85,9 @@ def main():
 
     optional arguments:
     -f, --force     overwrite the .iso file if it already exists
-    -?, -h, --help  show this help message and exit
+    -q, --quiet     don't output conversion progress
     -v, --version   show program's version number and exit
+    -?, -h, --help  show this help message and exit
     """
 
     # Set up command arguments
@@ -98,11 +99,12 @@ def main():
         'iso', nargs='?', help='filepath for the output .iso file')
     parser.add_argument('-f', '--force', action='store_true',
                         help='overwrite the .iso file if it already exists')
+    parser.add_argument('-q', '--quiet', action='store_true', help="don't output conversion progress")
+    parser.add_argument('-v', '--version', action='version',
+                        version='%(prog)s 0.0.1')
     # Add -? alias from original ccd2iso
     parser.add_argument('-?', '-h', '--help', action='help',
                         help='show this help message and exit')
-    parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 0.0.1')
 
     # Display full help menu with no arguments, instead of one-line usage
     if len(sys.argv) == 1:
@@ -132,7 +134,7 @@ def main():
 
     # Run conversion
     try:
-        convert(src_file, dst_file, progress=False, size=os.path.getsize(args.img))
+        convert(src_file, dst_file, progress=not args.quiet, size=os.path.getsize(args.img))
     except KeyboardInterrupt:
         print('Cancelled.')
         dst_file.close()
