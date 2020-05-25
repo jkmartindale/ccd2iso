@@ -13,6 +13,7 @@ import progressbar
 from ctypes import sizeof
 import sys
 
+__version__ = "0.0.1"
 
 class IncompleteSectorError(Exception):
     """Raised when there are less bytes in the sector than expected."""
@@ -102,7 +103,7 @@ def main():
     parser.add_argument('-q', '--quiet', action='store_true',
                         help="don't output conversion progress")
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 0.0.1')
+                        version='%(prog)s ' + __version__)
     # Add -? alias from original ccd2iso
     parser.add_argument('-?', '-h', '--help', action='help',
                         help='show this help message and exit')
