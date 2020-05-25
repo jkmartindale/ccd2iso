@@ -52,7 +52,7 @@ def convert(src_file: BytesIO, dst_file: BytesIO, progress: bool = False, size: 
             src_sect = ccd_sector.from_buffer_copy(bytes_read)
             if sizeof(src_sect) < expected_size:
                 raise IncompleteSectorError(
-                    'Error: Sector %d is incomplete, with only %d bytes instead of %d.' %
+                    'Error: Sector %d is incomplete, with only %d bytes instead of %d. This might not be a CloneCD disc image.' %
                     (sect_num, sizeof(src_sect), expected_size))
 
             if src_sect.sectheader.header.mode == 1:
@@ -64,7 +64,7 @@ def convert(src_file: BytesIO, dst_file: BytesIO, progress: bool = False, size: 
                     'Error: Found a session marker, this image might contain multisession data. Only the first session was exported.')
             else:
                 raise UnrecognizedSectorModeError('Error: Unrecognized sector mode (%x) at sector %d!' %
-                                                (src_sect.sectheader.header.mode, sect_num))
+                                                  (src_sect.sectheader.header.mode, sect_num))
 
             sect_num += 1
 
@@ -74,7 +74,7 @@ def convert(src_file: BytesIO, dst_file: BytesIO, progress: bool = False, size: 
 
 def main():
     """Command-line interface
-    
+
     usage: ccd2iso [-f] [-?] [-v] img [iso]
 
     Convert CloneCD .img files to ISO 9660 .iso files.
@@ -99,7 +99,8 @@ def main():
         'iso', nargs='?', help='filepath for the output .iso file')
     parser.add_argument('-f', '--force', action='store_true',
                         help='overwrite the .iso file if it already exists')
-    parser.add_argument('-q', '--quiet', action='store_true', help="don't output conversion progress")
+    parser.add_argument('-q', '--quiet', action='store_true',
+                        help="don't output conversion progress")
     parser.add_argument('-v', '--version', action='version',
                         version='%(prog)s 0.0.1')
     # Add -? alias from original ccd2iso
@@ -120,21 +121,24 @@ def main():
     except FileNotFoundError as error:
         print("Error: Couldn't find the file", error.filename)
         sys.exit(1)
-    
+
     # Set up destination file
     import tempfile
 
     if not args.iso:
         args.iso = os.path.splitext(args.img)[0] + '.iso'
     if os.path.exists(args.iso) and not args.force:
-        print('Error:', args.iso, 'already exists, pass --force if you want to overwrite it.')
+        print('Error:', args.iso,
+              'already exists, pass --force if you want to overwrite it.')
         sys.exit(1)
 
-    dst_file = tempfile.NamedTemporaryFile(dir=os.path.dirname(args.iso), delete=False)
+    dst_file = tempfile.NamedTemporaryFile(
+        dir=os.path.dirname(args.iso), delete=False)
 
     # Run conversion
     try:
-        convert(src_file, dst_file, progress=not args.quiet, size=os.path.getsize(args.img))
+        convert(src_file, dst_file, progress=not args.quiet,
+                size=os.path.getsize(args.img))
     except KeyboardInterrupt:
         print('Cancelled.')
         dst_file.close()
