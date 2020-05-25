@@ -30,6 +30,7 @@ setuptools.setup(
     long_description_content_type='text/markdown',
     url='https://github.com/jkmartindale/ccd2iso',
     author='James Martindale',
+    author_email='11380394+jkmartindale@users.noreply.github.com',
     classifiers=[
         'Environment :: Console',
         'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
@@ -39,7 +40,7 @@ setuptools.setup(
     ],
     packages=setuptools.find_packages(),
     install_requires=[
-        'progressbar2',
+        'progressbar2>=3.51',
     ],
     python_requires='>=3.8',
     entry_points={
